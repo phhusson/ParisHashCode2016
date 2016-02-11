@@ -157,9 +157,6 @@ int main(int argc, char **argv) {
 	drones.resize(nDrones);
 	for(int i=0; i<nDrones; ++i)
 		drones[i].id = i;
-	for(auto& d: drones) {
-		cout << "D: drone " << d.id << ":" << d.nTurns << "/" << maxTime << endl;
-	}
 
 	cin >> maxTime;
 	cin >> maxLoad;
