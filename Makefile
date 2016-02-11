@@ -1,3 +1,3 @@
-CXXFLAGS=-std=gnu++11
+CXXFLAGS=-std=gnu++11 -Wall -Werror
 
 all: main
