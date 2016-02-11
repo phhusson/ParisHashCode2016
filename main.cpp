@@ -81,6 +81,7 @@ int main(int argc, char **argv) {
 		warehouses[i].r = r;
 		warehouses[i].c = c;
 		
+                warehouses[i].nProducts.resize(nProducts);
 		for(int j=0; j<nProducts; ++j) {
 			cin >> warehouses[i].nProducts[j];
 		}
