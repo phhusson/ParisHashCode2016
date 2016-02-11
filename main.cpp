@@ -49,17 +49,17 @@ class Warehouse {
 		std::vector<int> nProducts;
 
         static int closestProduct(int r, int c, int productId, int nItems) {
-        int bestId = -1;
-        int bestDistance = -1;
+		int bestId = -1;
+		int bestDistance = -1;
 		for(auto& warehouse: warehouses) {
 			if(warehouse.nProducts[productId] < nItems) {
-                continue;
+				continue;
 			}
-            int d = distance2(r, warehouse.r, c, warehouse.c);
-            if(bestDistance == -1 || bestDistance > d) {
-                bestDistance = d;
-                bestId = warehouse.id;
-            }
+			int d = distance2(r, warehouse.r, c, warehouse.c);
+			if(bestDistance == -1 || bestDistance > d) {
+				bestDistance = d;
+				bestId = warehouse.id;
+			}
 		}
 		return bestId;
         }
@@ -115,6 +115,9 @@ bool droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
 	cout << droneNumber << " L " << warehouseId << " " << productId << " " << nItems << endl;
 	warehouses[warehouseId].loadDrone(productId, nItems);
+
+	drones[droneNumber].r = warehouses[warehouseId].r;
+	drones[droneNumber].c = warehouses[warehouseId].c;
 	return true;
 
 }
@@ -131,6 +134,9 @@ bool droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
 	nCommands++;
 	drone.weight -= productsWeight[productId] * nItems;
 	cout << droneNumber << " D " << orderId << " " << productId << " " << nItems << endl;
+
+	drones[droneNumber].r = orders[orderId].r;
+	drones[droneNumber].c = orders[orderId].c;
 	return true;
 }
 
@@ -321,15 +327,22 @@ int main(int argc, char **argv) {
 					int d1 = drones[i].distance(warehouses[w]);
 					int d2 = warehouses[w].distance(order);
 					if(d1 < bestDroneDistance &&
-							(maxTime-drones[i].nTurns) > (d1+d2+2) ) {
+							(maxTime-drones[i].nTurns) > (d1+d2+4*backpack.size()) ) {
 						bestDroneId = i;
 						bestDroneDistance = d1;
 					}
 				}
 
+				if(bestDroneId == -1)
+					break;
+				cout << "D: " << bestDroneId << endl;
+
 				//We got our drone
-				for(int b: backpack)
-					droneLoad(bestDroneId, w, b, 1);
+				for(int b: backpack) {
+					if(!droneLoad(bestDroneId, w, b, 1)) {
+						cout << "D: drone " << bestDroneId << " failed us..." << endl;
+					}
+				}
 
 				for(int b: backpack)
 					droneDeliver(bestDroneId, order.id, b, 1);
