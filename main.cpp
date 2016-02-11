@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 		auto& d = drones[droneId];
 		int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
 		droneLoad(droneId, warehouse, product, 1);
-		droneDeliver(droneId, orderId, products, 1);
+		droneDeliver(droneId, orderId, product, 1);
 	}
 	
 	cerr << nCommands << endl;
