@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <tuple>
 #include <algorithm>
 #include <math.h>
 
@@ -38,6 +39,7 @@ class Order {
 		int r, c;
 		std::vector<int> products;
 		int score() const;
+		std::list<std::pair<int, int>> getProductsWithNumber();
 };
 
 class Warehouse {
@@ -184,6 +186,21 @@ int Order::score() const {
 	return score;
 }
 
+std::list<std::pair<int, int>> Order::getProductsWithNumber() {
+	std::list<std::pair<int, int>> ret;
+	int previous = products[0], nPrevious = 0;
+	for(unsigned i=0; i<products.size(); ++i) {
+		if(products[i] != previous) {
+			ret.push_back(make_pair(previous, nPrevious));
+			nPrevious = 0;
+		}
+		nPrevious++;
+		previous = products[i];
+	}
+	ret.push_back(make_pair(previous, nPrevious));
+	return ret;
+}
+
 int main(int argc, char **argv) {
 	int nDrones;
 	cin >> rows;
@@ -213,8 +230,8 @@ int main(int argc, char **argv) {
 		cin >> r >> c;
 		warehouses[i].r = r;
 		warehouses[i].c = c;
-		
-                warehouses[i].nProducts.resize(nProducts);
+
+		warehouses[i].nProducts.resize(nProducts);
 		warehouses[i].id = i;
 		for(int j=0; j<nProducts; ++j) {
 			cin >> warehouses[i].nProducts[j];
@@ -228,7 +245,7 @@ int main(int argc, char **argv) {
 	for(int i=0; i<nOrders; ++i) {
 		int r, c;
 		cin >> r >>c;
-		
+
 		orders[i].r = r;
 		orders[i].c = c;
 
@@ -245,50 +262,79 @@ int main(int argc, char **argv) {
 		std::sort(orders[i].products.begin(), orders[i].products.end());
 	}
 
-	std::sort(orders.begin(),
-			orders.end(),
+	auto orders2 = orders;
+	std::sort(orders2.begin(),
+			orders2.end(),
 			[&](const Order& p, const Order& q) {
 				return p.score() < q.score();
 			});
 
-    int droneId = 0;
-	for(int orderId=0; orderId<nOrders; ++orderId) {
-		std::vector<int> nbProductItems;
-        nbProductItems.resize(nProducts);
-        for(int j=0; j<nProducts; ++j) {
-            nbProductItems[j] = 0;
-        }
-		for(int& product: orders[orderId].products) {
-            nbProductItems[product]++;
-        }
-        for(int j=0; j<nProducts; ++j) {
-            if(nbProductItems[j] == 0)
-                continue;
-            int remaining = nbProductItems[j];
-            while(remaining > 0) {
-                int k = remaining;
-                bool found = false;
-                while(!found && k > 0) {
-			        auto& d = drones[droneId];
-			        int warehouse = Warehouse::closestProduct(d.r, d.c, j, k);
-                    if(warehouse == -1) {
-                        k--;
-                        continue;
-                    }
-			        bool load = droneLoad(droneId, warehouse, j, k);
-                    if(!load) {
-                        k--;
-                        continue;
-                    }
-                    found = true;
-                }
-                if(k == 0)
-                    break;
-			    droneDeliver(droneId, orderId, j, k);
-                remaining -= k;
-            }
+	for(auto& order: orders2) {
+		auto newDrones = drones;
+		// (productId, numberOfProducts)
+		std::list<std::pair<int, int>> p = order.getProductsWithNumber();
+		
+		// v[warehouseId] = list( (productId, numberOfProducts), ... )
+		std::vector<std::list<std::pair<int, int>>> pWarehouses(nWarehouses);
+		//For each product, chose in which warehouse to take it from
+		//Group by warehouse
+		for(auto& pp: p) {
+			int w = Warehouse::closestProduct(order.r, order.c,
+				pp.first, pp.second);
+			pWarehouses[w].push_back(pp);
 		}
-        droneId = (droneId + 1) % nDrones;
+
+		//For each warehouse
+		for(int w=0; w<nWarehouses; ++w) {
+			//Search how to full drone
+			auto& elements = pWarehouses[w];
+			if(elements.size() == 0)
+				continue;
+
+			elements.sort(
+				[&](std::pair<int, int> a, std::pair<int, int> b) {
+					return productsWeight[a.first] > productsWeight[b.first];
+				});
+
+			while(true) {
+				int nElements = 0;
+				for(auto& e: elements) {
+					nElements += e.second;
+				}
+				if(nElements == 0)
+					break;
+
+				std::list<int> backpack;
+				int weightLeft = maxLoad;
+				for(auto& e: elements) {
+					while(productsWeight[e.first] < weightLeft && e.second) {
+						backpack.push_back(e.first);
+						e.second--;
+						weightLeft -= productsWeight[e.first];
+					}
+				}
+
+				//Find closest drone
+				int bestDroneDistance = INT_MAX;
+				int bestDroneId = -1;
+				for(int i=0; i<nDrones; ++i) {
+					int d1 = drones[i].distance(warehouses[w]);
+					int d2 = warehouses[w].distance(order);
+					if(d1 < bestDroneDistance &&
+							(maxTime-drones[i].nTurns) > (d1+d2+2) ) {
+						bestDroneId = i;
+						bestDroneDistance = d1;
+					}
+				}
+
+				//We got our drone
+				for(int b: backpack)
+					droneLoad(bestDroneId, w, b, 1);
+
+				for(int b: backpack)
+					droneDeliver(bestDroneId, order.id, b, 1);
+			}
+		}
 	}
 
 	for(auto& d: drones) {
