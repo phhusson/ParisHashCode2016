@@ -36,11 +36,11 @@ class Warehouse {
 		std::vector<int> nProducts;
 
         static int closestProduct(int r, int c, int productId, int nItems) {
-            for(unsigned i = 0; i < warehouses.size(); ++i) {
-                if(warehouses[i].nProducts[productId] >= nItems) {
-                    return i;
-                }
-            }
+		for(auto& warehouse: warehouses) {
+			if(warehouse.nProducts[productId] >= nItems) {
+			    return warehouse.id;
+			}
+		}
 		return -1;
         }
 	
