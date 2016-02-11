@@ -25,6 +25,13 @@ int distance(int r1, int r2, int c1, int c2) {
     return ceil(distance);
 }
 
+int distance2(int r1, int r2, int c1, int c2) {
+    int rDiff = r2 - r1;
+    int cDiff = c2 - c1;
+    float distance = sqrt(rDiff * rDiff + cDiff * cDiff);
+    return ceil(distance);
+}
+
 class Order {
 	public:
 		int id;
@@ -39,12 +46,19 @@ class Warehouse {
 		std::vector<int> nProducts;
 
         static int closestProduct(int r, int c, int productId, int nItems) {
+        int bestId = -1;
+        int bestDistance = -1;
 		for(auto& warehouse: warehouses) {
-			if(warehouse.nProducts[productId] >= nItems) {
-			    return warehouse.id;
+			if(warehouse.nProducts[productId] < nItems) {
+                continue;
 			}
+            int d = distance2(r, warehouse.r, c, warehouse.c);
+            if(bestDistance == -1 || bestDistance > d) {
+                bestDistance = d;
+                bestId = warehouse.id;
+            }
 		}
-		return -1;
+		return bestId;
         }
 	
 		inline void loadDrone(int productId, int nItems) {
