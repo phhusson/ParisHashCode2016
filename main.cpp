@@ -71,7 +71,7 @@ class Drone {
 			return ::distance(w.r, r, w.c, c);
 		}
 		int distance(Order& o) {
-			return ::distance(o.r, r, o.c, r, c);
+			return ::distance(o.r, r, o.c, c);
 		}
 };
 
