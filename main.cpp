@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
 
 					int qd = warehouse.distance(orders[orderId]);
 					if(qd<qDistance)
-						pDistance = qd;
+						qDistance = qd;
 				}
 				return pDistance < qDistance;
 			});
