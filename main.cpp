@@ -4,6 +4,14 @@
 
 using namespace std;
 
+class Order;
+class Drone;
+class Warehouse;
+static int nCommands = 0;
+static int rows, columns, maxTime, maxLoad;
+static std::vector<Drone> drones;
+static std::vector<Warehouse> warehouses;
+
 class Order {
 	public:
 		int r, c;
@@ -22,12 +30,16 @@ class Warehouse {
 	public:
 		int r, c;
 		std::vector<int> nProducts;
+
+        static int closestProduct(int r, int c, int productId, int nItems) {
+            for(unsigned i = 0; i < warehouses.size(); ++i) {
+                if(warehouses[i].nProducts[productId] >= nItems) {
+                    return i;
+                }
+            }
+        }
 };
 
-static int nCommands = 0;
-static int rows, columns, maxTime, maxLoad;
-static std::vector<Drone> drones;
-static std::vector<Warehouse> warehouses;
 void droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
 	drones[droneNumber].nTurns++;
