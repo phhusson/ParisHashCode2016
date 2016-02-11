@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 
@@ -29,6 +30,13 @@ class Drone {
 		
 		int nTurns;
 };
+
+int distance(int r1, int r2, int c1, int c2) {
+    int rDiff = r2 - r1;
+    int cDiff = c2 - c1;
+    float distance = sqrt(rDiff * rDiff + cDiff * cDiff);
+    return ceil(distance);
+}
 
 class Warehouse {
 	public:
