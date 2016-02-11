@@ -151,6 +151,11 @@ int main(int argc, char **argv) {
 	cin >> columns;
 	cin >> nDrones;
 	drones.resize(nDrones);
+	for(int i=0; i<nDrones; ++i)
+		drones[i].id = i;
+	for(auto& d: drones) {
+		cout << "D: drone " << d.id << ":" << d.nTurns << "/" << maxTime << endl;
+	}
 
 	cin >> maxTime;
 	cin >> maxLoad;
@@ -226,6 +231,10 @@ int main(int argc, char **argv) {
 			droneDeliver(droneId, orderId, product, 1);
 		}
         droneId = (droneId + 1) % nDrones;
+	}
+
+	for(auto& d: drones) {
+		cout << "D: drone " << d.id << ":" << d.nTurns << "/" << maxTime << endl;
 	}
 
 	cerr << nCommands << endl;
