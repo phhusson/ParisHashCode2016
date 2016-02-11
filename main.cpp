@@ -30,6 +30,7 @@ class Order {
 		int id;
 		int r, c;
 		std::vector<int> products;
+		int score();
 };
 
 class Warehouse {
@@ -149,6 +150,26 @@ bool droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
 	return true;
 }
 
+int Order::score() {
+	int score = 0;
+
+	int previous = products[0], nPrevious = 0;
+	unsigned i;
+	for(i=0; i<products.size(); ++i) {
+		if(products[i] != previous) {
+			int w = Warehouse::closestProduct(r, c, previous, nPrevious);
+			score += warehouses[w].distance(*this);
+			nPrevious = 0;
+		}
+		nPrevious++;
+		previous = products[i];
+	}
+	int w = Warehouse::closestProduct(r, c, previous, nPrevious);
+	score += warehouses[w].distance(*this);
+
+	return score;
+}
+
 int main(int argc, char **argv) {
 	int nDrones;
 	cin >> rows;
@@ -207,6 +228,7 @@ int main(int argc, char **argv) {
 			cin >> p;
 			orders[i].products[j] = p;
 		}
+		std::sort(orders[i].products.begin(), orders[i].products.end());
 	}
 
     /*
@@ -221,6 +243,12 @@ int main(int argc, char **argv) {
 		}
 	}
     */
+
+	std::sort(orders.begin(),
+			orders.end(),
+			[&](auto& p, auto& q) {
+				return p.score() < q.score();
+			});
 
     int droneId = 0;
 	for(int orderId=0; orderId<nOrders; ++orderId) {
