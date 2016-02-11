@@ -76,16 +76,18 @@ class Drone {
 };
 
 bool droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
-	int newNTurns = drones[droneNumber].nTurns;
-	newNTurns += drones[droneNumber].distance(warehouses[warehouseId]) + 1;
-	drones[droneNumber].nTurns = newNTurns;
+	auto& drone = drones[droneNumber];
+
+	int newNTurns = drone.nTurns;
+	newNTurns += drone.distance(warehouses[warehouseId]) + 1;
+	drone.nTurns = newNTurns;
 
 	if(newNTurns >= maxTime)
 		return false;
 
-	int newWeight = drones[droneNumber].weight;
+	int newWeight = drone.weight;
 	newWeight += productsWeight[productId] * nItems;
-	if(newWeight > maxLoad)
+	if(newWeight >= maxLoad)
 		return false;
 
 	nCommands++;
@@ -98,42 +100,48 @@ bool droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
 }
 
 bool droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
-	nCommands++;
-	int newNTurns = drones[droneNumber].nTurns;
-	newNTurns += drones[droneNumber].distance(orders[orderId]) + 1;
-	drones[droneNumber].nTurns = newNTurns;
+	auto& drone = drones[droneNumber];
+
+	int newNTurns = drone.nTurns;
+	newNTurns += drone.distance(orders[orderId]) + 1;
+	drone.nTurns = newNTurns;
 	if(newNTurns >= maxTime)
 		return false;
 
-	drones[droneNumber].weight -= productsWeight[productId] * nItems;
+	nCommands++;
+	drone.weight -= productsWeight[productId] * nItems;
 	cout << droneNumber << " D " << orderId << " " << productId << " " << nItems << endl;
 	return true;
 }
 
 bool droneWait(int droneNumber, int nTurns) {
-	int newNTurns = drones[droneNumber].nTurns;
+	auto& drone = drones[droneNumber];
+
+	int newNTurns = drone.nTurns;
 	newNTurns += nTurns;
-	drones[droneNumber].nTurns = newNTurns;
+	drone.nTurns = newNTurns;
 
 	if(newNTurns >= maxTime)
 		return false;
 
 	nCommands++;
-	drones[droneNumber].nTurns += nTurns;
+	drone.nTurns += nTurns;
 	cout << droneNumber << " W " << nTurns << endl;
 	return true;
 }
 
 bool droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
-	int newNTurns = drones[droneNumber].nTurns;
-	newNTurns += drones[droneNumber].distance(warehouses[warehouseId]) + 1;
-	drones[droneNumber].nTurns = newNTurns;
+	auto& drone = drones[droneNumber];
+
+	int newNTurns = drone.nTurns;
+	newNTurns += drone.distance(warehouses[warehouseId]) + 1;
+	drone.nTurns = newNTurns;
 
 	if(newNTurns >= maxTime)
 		return false;
 
 	nCommands++;
-	drones[droneNumber].weight -= productsWeight[productId] * nItems;
+	drone.weight -= productsWeight[productId] * nItems;
 	cout << droneNumber << " U " << warehouseId << " " << productId << " " << nItems << endl;
 	warehouses[warehouseId].unloadDrone(productId, nItems);
 
