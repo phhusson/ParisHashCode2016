@@ -68,10 +68,10 @@ class Drone {
 		//Caching elements
 		int weight;
 		int distance(Warehouse& w) {
-			return ::distance(w.r, w.c, r, c);
+			return ::distance(w.r, r, w.c, c);
 		}
 		int distance(Order& o) {
-			return ::distance(o.r, o.c, r, c);
+			return ::distance(o.r, r, o.c, r, c);
 		}
 };
 
