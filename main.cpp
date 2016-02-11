@@ -37,7 +37,7 @@ class Order {
 		int id;
 		int r, c;
 		std::vector<int> products;
-		int score();
+		int score() const;
 };
 
 class Warehouse {
@@ -71,7 +71,7 @@ class Warehouse {
 			assert(nItems <= nProducts[productId]);
 			nProducts[productId] += nItems;
 		}
-	int distance(Order& o) {
+	int distance(const Order& o) {
 		return ::distance(r, o.r, c, o.c);
 	}
 };
@@ -164,7 +164,7 @@ bool droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
 	return true;
 }
 
-int Order::score() {
+int Order::score() const {
 	int score = 0;
 
 	int previous = products[0], nPrevious = 0;
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 
 	std::sort(orders.begin(),
 			orders.end(),
-			[&](Order& p, Order& q) {
+			[&](const Order& p, const Order& q) {
 				return p.score() < q.score();
 			});
 
