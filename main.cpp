@@ -212,44 +212,42 @@ int main(int argc, char **argv) {
 		}
 	}
 
-    /*
-	for(int droneOrder=0; droneOrder<min(nOrders, nDrones); ++droneOrder) {
-		int droneId = droneOrder;
-		int orderId = droneOrder;
-		for(int& product: orders[orderId].products) {
-			auto& d = drones[droneId];
-			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
-			droneLoad(droneId, warehouse, product, 1);
-			droneDeliver(droneId, orderId, product, 1);
-		}
-	}
-    */
-
     int droneId = 0;
 	for(int orderId=0; orderId<nOrders; ++orderId) {
-		std::sort(orders[orderId].products.begin(),
-			orders[orderId].products.end(),
-			[&](auto& p, auto& q) {
-				int pDistance = INT_MAX;
-				int qDistance = INT_MAX;
-				for(auto& warehouse: warehouses) {
-					int pd = warehouse.distance(orders[orderId]);
-					if(pd<pDistance)
-						pDistance = pd;
-
-					int qd = warehouse.distance(orders[orderId]);
-					if(qd<qDistance)
-						pDistance = qd;
-				}
-				return pDistance < qDistance;
-			});
+		std::vector<int> nbProductItems;
+        nbProductItems.resize(nProducts);
+        for(int j=0; j<nProducts; ++j) {
+            nbProductItems[j] = 0;
+        }
 		for(int& product: orders[orderId].products) {
-			auto& d = drones[droneId];
-			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
-			if(!droneLoad(droneId, warehouse, product, 1)) {
+            nbProductItems[product]++;
+        }
+        for(int j=0; j<nProducts; ++j) {
+            if(nbProductItems[j] == 0)
                 continue;
+            int remaining = nbProductItems[j];
+            while(remaining > 0) {
+                int k = remaining;
+                bool found = false;
+                while(!found && k > 0) {
+			        auto& d = drones[droneId];
+			        int warehouse = Warehouse::closestProduct(d.r, d.c, j, k);
+                    if(warehouse == -1) {
+                        k--;
+                        continue;
+                    }
+			        bool load = droneLoad(droneId, warehouse, j, k);
+                    if(!load) {
+                        k--;
+                        continue;
+                    }
+                    found = true;
+                }
+                if(k == 0)
+                    break;
+			    droneDeliver(droneId, orderId, j, k);
+                remaining -= k;
             }
-			droneDeliver(droneId, orderId, product, 1);
 		}
         droneId = (droneId + 1) % nDrones;
 	}
