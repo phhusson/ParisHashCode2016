@@ -46,10 +46,10 @@ void droneWait(int droneNumber, int nTurns) {
 	cout << droneNumber << " W " << nTurns << endl;
 }
 
-void droneUnload(int droneNumber, int orderId, int productId, int nItems) {
+void droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
 	drones[droneNumber].nTurns++;
-	cout << droneNumber << " U " << orderId << " " << productId << " " << nItems << endl;
+	cout << droneNumber << " U " << warehouseId << " " << productId << " " << nItems << endl;
 }
 
 int main(int argc, char **argv) {
