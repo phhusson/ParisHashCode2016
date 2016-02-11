@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <climits>
 #include <iostream>
 #include <vector>
 #include <list>
@@ -55,6 +56,9 @@ class Warehouse {
 			assert(nItems <= nProducts[productId]);
 			nProducts[productId] += nItems;
 		}
+	int distance(Order& o) {
+		return ::distance(r, o.r, c, o.c);
+	}
 };
 
 class Drone {
@@ -206,7 +210,6 @@ int main(int argc, char **argv) {
 			cin >> p;
 			orders[i].products[j] = p;
 		}
-		std::sort(orders[i].products.begin(), orders[i].products.end());
 	}
 
     /*
@@ -224,6 +227,22 @@ int main(int argc, char **argv) {
 
     int droneId = 0;
 	for(int orderId=0; orderId<nOrders; ++orderId) {
+		std::sort(orders[orderId].products.begin(),
+			orders[orderId].products.end(),
+			[&](auto& p, auto& q) {
+				int pDistance = INT_MAX;
+				int qDistance = INT_MAX;
+				for(auto& warehouse: warehouses) {
+					int pd = warehouse.distance(orders[orderId]);
+					if(pd<pDistance)
+						pDistance = pd;
+
+					int qd = warehouse.distance(orders[orderId]);
+					if(qd<qDistance)
+						pDistance = qd;
+				}
+				return pDistance < qDistance;
+			});
 		for(int& product: orders[orderId].products) {
 			auto& d = drones[droneId];
 			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
