@@ -139,20 +139,13 @@ int main(int argc, char **argv) {
 		}
 	}
 
-#if 0
-	droneLoad(0, 1, 2, 3);
-	droneDeliver(0, 1, 2, 3);
-	droneWait(1, 3);
-	droneUnload(1, 1, 1, 1);
-	endTurn();
-#endif
-
 	int droneId = 0;
 	int orderId = 0;
 	for(int& product: orders[orderId].products) {
 		auto& d = drones[droneId];
 		int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
 		droneLoad(droneId, warehouse, product, 1);
+		droneDeliver(droneId, orderId, products, 1);
 	}
 	
 	cerr << nCommands << endl;
