@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 using namespace std;
 
@@ -139,15 +140,17 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	int droneId = 0;
-	int orderId = 0;
-	for(int& product: orders[orderId].products) {
-		auto& d = drones[droneId];
-		int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
-		droneLoad(droneId, warehouse, product, 1);
-		droneDeliver(droneId, orderId, product, 1);
+	for(int droneOrder=0; droneOrder<min(nOrders, nDrones); ++droneOrder) {
+		int droneId = droneOrder;
+		int orderId = droneOrder;
+		for(int& product: orders[orderId].products) {
+			auto& d = drones[droneId];
+			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
+			droneLoad(droneId, warehouse, product, 1);
+			droneDeliver(droneId, orderId, product, 1);
+		}
 	}
-	
+
 	cerr << nCommands << endl;
 	return 0;
 }
