@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <iostream>
 #include <vector>
 #include <list>
@@ -14,12 +15,14 @@ static std::vector<Warehouse> warehouses;
 
 class Order {
 	public:
+		int id;
 		int r, c;
 		std::vector<int> products;
 };
 
 class Drone {
 	public:
+		int id;
 		int r,c;
 		std::list<int> productIds;
 		
@@ -28,6 +31,7 @@ class Drone {
 
 class Warehouse {
 	public:
+		int id;
 		int r, c;
 		std::vector<int> nProducts;
 
@@ -37,13 +41,25 @@ class Warehouse {
                     return i;
                 }
             }
+		return -1;
         }
+	
+		inline void loadDrone(int productId, int nItems) {
+			assert(nItems <= nProducts[productId]);
+			nProducts[productId] -= nItems;
+		}
+
+		inline void unloadDrone(int productId, int nItems) {
+			assert(nItems <= nProducts[productId]);
+			nProducts[productId] += nItems;
+		}
 };
 
 void droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
 	drones[droneNumber].nTurns++;
 	cout << droneNumber << " L " << warehouseId << " " << productId << " " << nItems << endl;
+	warehouses[warehouseId].loadDrone(productId, nItems);
 }
 
 void droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
@@ -62,6 +78,7 @@ void droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
 	drones[droneNumber].nTurns++;
 	cout << droneNumber << " U " << warehouseId << " " << productId << " " << nItems << endl;
+	warehouses[warehouseId].unloadDrone(productId, nItems);
 }
 
 int main(int argc, char **argv) {
@@ -93,6 +110,7 @@ int main(int argc, char **argv) {
 		warehouses[i].c = c;
 		
                 warehouses[i].nProducts.resize(nProducts);
+		warehouses[i].id = i;
 		for(int j=0; j<nProducts; ++j) {
 			cin >> warehouses[i].nProducts[j];
 		}
@@ -111,6 +129,7 @@ int main(int argc, char **argv) {
 
 		int nProducts;
 		cin >> nProducts;
+		orders[i].id = i;
 
 		orders[i].products.resize(nProducts);
 		for(int j=0; j<nProducts; ++j) {
@@ -127,7 +146,14 @@ int main(int argc, char **argv) {
 	droneUnload(1, 1, 1, 1);
 	endTurn();
 #endif
-	
+
+	int droneId = 0;
+	int orderId = 0;
+	for(int& product: orders[orderId].products) {
+		auto& d = drones[droneId];
+		int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
+		droneLoad(droneId, warehouse, product, 1);
+	}
 	
 	cerr << nCommands << endl;
 	return 0;
