@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 		cin >> nProducts;
 
 		orders[i].products.resize(nProducts);
-		for(int j=0; j<nOrders; ++j) {
+		for(int j=0; j<nProducts; ++j) {
 			int p;
 			cin >> p;
 			orders[i].products[j] = p;
