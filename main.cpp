@@ -14,22 +14,8 @@ static int nCommands = 0;
 static int rows, columns, maxTime, maxLoad;
 static std::vector<Drone> drones;
 static std::vector<Warehouse> warehouses;
-
-class Order {
-	public:
-		int id;
-		int r, c;
-		std::vector<int> products;
-};
-
-class Drone {
-	public:
-		int id;
-		int r,c;
-		std::list<int> productIds;
-		
-		int nTurns;
-};
+static std::vector<int> productsWeight;
+static std::vector<Order> orders;
 
 int distance(int r1, int r2, int c1, int c2) {
     int rDiff = r2 - r1;
@@ -37,6 +23,13 @@ int distance(int r1, int r2, int c1, int c2) {
     float distance = sqrt(rDiff * rDiff + cDiff * cDiff);
     return ceil(distance);
 }
+
+class Order {
+	public:
+		int id;
+		int r, c;
+		std::vector<int> products;
+};
 
 class Warehouse {
 	public:
@@ -64,30 +57,87 @@ class Warehouse {
 		}
 };
 
-void droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
+class Drone {
+	public:
+		int id;
+		int r,c;
+		std::list<int> productIds;
+
+		int nTurns;
+
+		//Caching elements
+		int weight;
+		int distance(Warehouse& w) {
+			return ::distance(w.r, w.c, r, c);
+		}
+		int distance(Order& o) {
+			return ::distance(o.r, o.c, r, c);
+		}
+};
+
+bool droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
+	int newNTurns = drones[droneNumber].nTurns;
+	newNTurns += drones[droneNumber].distance(warehouses[warehouseId]) + 1;
+	drones[droneNumber].nTurns = newNTurns;
+
+	if(newNTurns >= maxTime)
+		return false;
+
+	int newWeight = drones[droneNumber].weight;
+	newWeight += productsWeight[productId] * nItems;
+	if(newWeight > maxLoad)
+		return false;
+
 	nCommands++;
-	drones[droneNumber].nTurns++;
+	drones[droneNumber].weight = newWeight;
+
 	cout << droneNumber << " L " << warehouseId << " " << productId << " " << nItems << endl;
 	warehouses[warehouseId].loadDrone(productId, nItems);
+	return true;
+
 }
 
-void droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
+bool droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
 	nCommands++;
-	drones[droneNumber].nTurns++;
+	int newNTurns = drones[droneNumber].nTurns;
+	newNTurns += drones[droneNumber].distance(orders[orderId]) + 1;
+	drones[droneNumber].nTurns = newNTurns;
+	if(newNTurns >= maxTime)
+		return false;
+
+	drones[droneNumber].weight -= productsWeight[productId] * nItems;
 	cout << droneNumber << " D " << orderId << " " << productId << " " << nItems << endl;
+	return true;
 }
 
-void droneWait(int droneNumber, int nTurns) {
+bool droneWait(int droneNumber, int nTurns) {
+	int newNTurns = drones[droneNumber].nTurns;
+	newNTurns += nTurns;
+	drones[droneNumber].nTurns = newNTurns;
+
+	if(newNTurns >= maxTime)
+		return false;
+
 	nCommands++;
-	drones[droneNumber].nTurns++;
+	drones[droneNumber].nTurns += nTurns;
 	cout << droneNumber << " W " << nTurns << endl;
+	return true;
 }
 
-void droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
+bool droneUnload(int droneNumber, int warehouseId, int productId, int nItems) {
+	int newNTurns = drones[droneNumber].nTurns;
+	newNTurns += drones[droneNumber].distance(warehouses[warehouseId]) + 1;
+	drones[droneNumber].nTurns = newNTurns;
+
+	if(newNTurns >= maxTime)
+		return false;
+
 	nCommands++;
-	drones[droneNumber].nTurns++;
+	drones[droneNumber].weight -= productsWeight[productId] * nItems;
 	cout << droneNumber << " U " << warehouseId << " " << productId << " " << nItems << endl;
 	warehouses[warehouseId].unloadDrone(productId, nItems);
+
+	return true;
 }
 
 int main(int argc, char **argv) {
@@ -103,7 +153,7 @@ int main(int argc, char **argv) {
 	int nProducts;
 	cin >> nProducts;
 
-	std::vector<int> productsWeight(nProducts);
+	productsWeight.resize(nProducts);
 	for(int i=0; i<nProducts; ++i)
 		cin >> productsWeight[i];
 
@@ -128,7 +178,7 @@ int main(int argc, char **argv) {
 	int nOrders;
 	cin >> nOrders;
 
-	std::vector<Order> orders(nOrders);
+	orders.resize(nOrders);
 	for(int i=0; i<nOrders; ++i) {
 		int r, c;
 		cin >> r >>c;
@@ -146,6 +196,7 @@ int main(int argc, char **argv) {
 			cin >> p;
 			orders[i].products[j] = p;
 		}
+		std::sort(orders[i].products.begin(), orders[i].products.end());
 	}
 
     /*
