@@ -72,10 +72,10 @@ class Drone {
 		//Caching elements
 		int weight;
 		int distance(Warehouse& w) {
-			return ::distance(w.r, w.c, r, c);
+			return ::distance(w.r, r, w.c, c);
 		}
 		int distance(Order& o) {
-			return ::distance(o.r, o.c, r, c);
+			return ::distance(o.r, r, o.c, c);
 		}
 };
 
@@ -246,7 +246,9 @@ int main(int argc, char **argv) {
 		for(int& product: orders[orderId].products) {
 			auto& d = drones[droneId];
 			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
-			droneLoad(droneId, warehouse, product, 1);
+			if(!droneLoad(droneId, warehouse, product, 1)) {
+                continue;
+            }
 			droneDeliver(droneId, orderId, product, 1);
 		}
         droneId = (droneId + 1) % nDrones;
