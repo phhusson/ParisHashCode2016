@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 
 	std::sort(orders.begin(),
 			orders.end(),
-			[&](auto& p, auto& q) {
+			[&](Order& p, Order& q) {
 				return p.score() < q.score();
 			});
 
