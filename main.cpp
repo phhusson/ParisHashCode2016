@@ -15,7 +15,7 @@ class Drone {
 		int r,c;
 		std::list<int> productIds;
 		
-		int lastCommandTurn;
+		int nTurns;
 };
 
 class Warehouse {
@@ -25,32 +25,31 @@ class Warehouse {
 };
 
 static int nCommands = 0;
-static int nTurns = 0;
 static int rows, columns, maxTime, maxLoad;
 static std::vector<Drone> drones;
 static std::vector<Warehouse> warehouses;
 void droneLoad(int droneNumber, int warehouseId, int productId, int nItems) {
 	nCommands++;
+	drones[droneNumber].nTurns++;
 	cout << droneNumber << " L " << warehouseId << " " << productId << " " << nItems << endl;
 }
 
 void droneDeliver(int droneNumber, int orderId, int productId, int nItems) {
 	nCommands++;
+	drones[droneNumber].nTurns++;
 	cout << droneNumber << " D " << orderId << " " << productId << " " << nItems << endl;
 }
 
 void droneWait(int droneNumber, int nTurns) {
 	nCommands++;
+	drones[droneNumber].nTurns++;
 	cout << droneNumber << " W " << nTurns << endl;
 }
 
 void droneUnload(int droneNumber, int orderId, int productId, int nItems) {
 	nCommands++;
+	drones[droneNumber].nTurns++;
 	cout << droneNumber << " U " << orderId << " " << productId << " " << nItems << endl;
-}
-
-void endTurn() {
-	nTurns++;
 }
 
 int main(int argc, char **argv) {
@@ -109,11 +108,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
+#if 0
 	droneLoad(0, 1, 2, 3);
 	droneDeliver(0, 1, 2, 3);
 	droneWait(1, 3);
 	droneUnload(1, 1, 1, 1);
 	endTurn();
+#endif
+	
 	
 	cerr << nCommands << endl;
 	return 0;
