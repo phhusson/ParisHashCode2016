@@ -148,6 +148,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+    /*
 	for(int droneOrder=0; droneOrder<min(nOrders, nDrones); ++droneOrder) {
 		int droneId = droneOrder;
 		int orderId = droneOrder;
@@ -157,6 +158,18 @@ int main(int argc, char **argv) {
 			droneLoad(droneId, warehouse, product, 1);
 			droneDeliver(droneId, orderId, product, 1);
 		}
+	}
+    */
+
+    int droneId = 0;
+	for(int orderId=0; orderId<nOrders; ++orderId) {
+		for(int& product: orders[orderId].products) {
+			auto& d = drones[droneId];
+			int warehouse = Warehouse::closestProduct(d.r, d.c, product, 1);
+			droneLoad(droneId, warehouse, product, 1);
+			droneDeliver(droneId, orderId, product, 1);
+		}
+        droneId = (droneId + 1) % nDrones;
 	}
 
 	cerr << nCommands << endl;
